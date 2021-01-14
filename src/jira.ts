@@ -28,12 +28,17 @@ export class Jira {
   }
   
   async transitionTicket(ticketNumber: string, state: string, message: string): Promise<any> {
-    const result = await this.client.issue.transitionIssue({
+    await this.client.issue.transitionIssue({
         issueKey: ticketNumber,
         transition: { id: state }
     });
 
-    return result;
+    await this.client.issue.addComment({
+      issueKey: ticketNumber,
+      body: message
+    });
+
+    return true;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

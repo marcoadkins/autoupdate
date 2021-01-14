@@ -292,7 +292,7 @@ export class AutoUpdater {
           ghCore.info('Merge conflict detected, Notifying author.');
           const ticketNumberResult = this.eventData.pull_request.head.ref.toUpperCase().match(/[A-Z]+-\d+/g)
           if(ticketNumberResult){
-            await jira.transitionTicket(ticketNumberResult[0], '4', 'merge conflict')
+            await jira.transitionTicket(ticketNumberResult[0], '4', 'Moved to in progress due to merge conflict')
           }
           await this.writeComment(pull, 'Merge conflict needs resolved')
           break;
