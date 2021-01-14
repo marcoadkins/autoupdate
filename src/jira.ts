@@ -35,6 +35,25 @@ export class Jira {
 
     return result;
   }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  getValue(key: string, required = false, defaultVal?: any): any {
+    if (
+      key in this.env &&
+      this.env[key] !== null &&
+      this.env[key] !== undefined
+    ) {
+      return this.env[key];
+    }
+
+    if (required) {
+      throw new Error(
+        `Environment variable '${key}' was not provided, please define it and try again.`,
+      );
+    }
+
+    return defaultVal;
+  }
 }
   
   export default new Jira();
