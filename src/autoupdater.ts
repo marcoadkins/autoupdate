@@ -3,6 +3,8 @@ import { GitHub } from '@actions/github/lib/utils';
 import * as ghCore from '@actions/core';
 import * as octokit from '@octokit/types';
 import { ConfigLoader } from './config-loader';
+import jira, { Jira } from 'jira';
+import { PullsUpdateResponseData } from '@octokit/types';
 
 interface MergeOpts {
   owner: string;
@@ -122,7 +124,7 @@ export class AutoUpdater {
       mergeOpts.commit_message = mergeMsg;
     }
 
-    await this.merge(mergeOpts);
+    await this.merge(mergeOpts, pull);
 
     return true;
   }
@@ -226,8 +228,17 @@ export class AutoUpdater {
     return true;
   }
 
+  async writeComment(pull: octokit.PullsUpdateResponseData, message: string): Promise<any> {
+    const new_comment = this.octokit.issues.createComment({
+      issue_number: pull.number,
+      owner: pull.head.repo.owner.login,
+      repo: pull.head.repo.name,
+      body: message
+    });
+  }
+
   async merge(
-    mergeOpts: octokit.RequestParameters & MergeOpts,
+    mergeOpts: octokit.RequestParameters & MergeOpts, pull: octokit.PullsUpdateResponseData
   ): Promise<boolean> {
     const sleep = (timeMs: number) => {
       return new Promise((resolve) => {
@@ -272,6 +283,18 @@ export class AutoUpdater {
           mergeConflictAction === 'ignore'
         ) {
           ghCore.info('Merge conflict detected, skipping update.');
+          break;
+        }
+        if (
+          e.message === 'Merge conflict' &&
+          mergeConflictAction === 'notify'
+        ) {
+          ghCore.info('Merge conflict detected, Notifying author.');
+          const ticketNumberResult = this.eventData.pull_request.head.ref.toUpperCase().match(/[A-Z]+-\d+/g)
+          if(ticketNumberResult){
+            await jira.transitionTicket(ticketNumberResult[0], '4', 'merge conflict')
+          }
+          await this.writeComment(pull, 'Merge conflict needs resolved')
           break;
         }
         if (e.message === 'Merge conflict') {
