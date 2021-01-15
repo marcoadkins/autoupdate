@@ -289,12 +289,18 @@ export class AutoUpdater {
           e.message === 'Merge conflict' &&
           mergeConflictAction === 'notify'
         ) {
-          ghCore.info('Merge conflict detected, Notifying author.');
-          const ticketNumberResult = pull.head.ref.toUpperCase().match(/[A-Z]+-\d+/g)
-          if(ticketNumberResult){
-            await jira.transitionTicket(ticketNumberResult[0], '4', 'Moved to in progress due to merge conflict')
+          try {
+            ghCore.info('Merge conflict detected, Notifying author.');
+            const ticketNumberResult = pull.head.ref.toUpperCase().match(/[A-Z]+-\d+/g)
+            if(ticketNumberResult){
+              // 431 is the "Request Changes" transition and moves the ticket to in progress
+              await jira.transitionTicket(ticketNumberResult[0], '431', 'Moved to in progress due to merge conflict')
+            }
+            await this.writeComment(pull, 'Merge conflict needs resolved')
+          }catch (e){
+            ghCore.error('FAILED to notify user');
+            ghCore.error(e);
           }
-          await this.writeComment(pull, 'Merge conflict needs resolved')
           break;
         }
         if (e.message === 'Merge conflict') {
