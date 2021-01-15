@@ -9,6 +9,22 @@ export class ConfigLoader {
     return this.getValue('GITHUB_TOKEN', true);
   }
 
+  jiraSite(): string {
+    return this.getValue('JIRA_SITE', true);
+  }
+
+  jiraUser(): string {
+    return this.getValue('JIRA_USER', true);
+  }
+
+  jiraPassword(): string {
+    return this.getValue('JIRA_PASSWORD', true);
+  }
+
+  jiraConflictTranisition(): string {
+    return this.getValue('JIRA_CONFLICT_TRANSITION', true);
+  }
+
   dryRun(): boolean {
     const val = this.getValue('DRY_RUN', false, 'false');
     return val === 'true';
