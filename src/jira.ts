@@ -1,30 +1,21 @@
 import JiraClient from "jira-connector";
+import { ConfigLoader } from './config-loader';
 
 export class Jira {
   env: NodeJS.ProcessEnv;
   client: any;
+  config: ConfigLoader;
 
   constructor() {
     this.env = process.env;
+    this.config = new ConfigLoader();
     this.client = new JiraClient({
-      host: `${this.jiraSite()}.atlassian.net`,
+      host: `${this.config.jiraSite()}.atlassian.net`,
       basic_auth: {
-        username: this.jiraUser(),
-        password: this.jiraPassword()
+        username: this.config.jiraUser(),
+        password: this.config.jiraPassword()
       }
     });
-  }
-
-  jiraSite(): string {
-    return this.getValue('JIRA_SITE', true);
-  }
-
-  jiraUser(): string {
-    return this.getValue('JIRA_USER', true);
-  }
-
-  jiraPassword(): string {
-    return this.getValue('JIRA_PASSWORD', true);
   }
   
   async transitionTicket(ticketNumber: string, state: string, message: string): Promise<any> {
@@ -39,25 +30,6 @@ export class Jira {
     });
 
     return true;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  getValue(key: string, required = false, defaultVal?: any): any {
-    if (
-      key in this.env &&
-      this.env[key] !== null &&
-      this.env[key] !== undefined
-    ) {
-      return this.env[key];
-    }
-
-    if (required) {
-      throw new Error(
-        `Environment variable '${key}' was not provided, please define it and try again.`,
-      );
-    }
-
-    return defaultVal;
   }
 }
   

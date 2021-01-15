@@ -61,6 +61,11 @@ All configuration values, except `GITHUB_TOKEN`, are optional.
   * `"ignore"`: _autoupdate_ will silently ignore merge conflicts.
   * `"notify"`: _autoupdate_ will comment on issue that there is a conflict.
 
+* `JIRA_SITE`: The jira workspace name.
+* `JIRA_USER`: The jira username.
+* `JIRA_PASSWORD`: The jira password.
+* `JIRA_CONFLICT_TRANSITION`: The jira transition id to use when a conflict is encountered.
+
 Here's an example workflow file with all of the above options specified:
 
 ```yaml
