@@ -295,7 +295,7 @@ export class AutoUpdater {
             if(ticketNumberResult){
               await jira.transitionTicket(ticketNumberResult[0], this.config.jiraConflictTranisition(), 'Moved to in progress due to merge conflict')
             }
-            await this.writeComment(pull, 'Merge conflict needs resolved')
+            // await this.writeComment(pull, 'Merge conflict needs resolved')
           }catch (e){
             ghCore.error('FAILED to notify user');
             ghCore.error(e);
