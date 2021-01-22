@@ -25,6 +25,10 @@ export class ConfigLoader {
     return this.getValue('JIRA_CONFLICT_TRANSITION', true);
   }
 
+  staleDays(): number {
+    return this.getValue('STALE_DAYS', false, 30);
+  }
+
   dryRun(): boolean {
     const val = this.getValue('DRY_RUN', false, 'false');
     return val === 'true';

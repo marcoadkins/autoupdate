@@ -150,6 +150,14 @@ export class AutoUpdater {
       return false;
     }
 
+    const now = new Date();
+    const staleDate = now.setDate(now.getDate()-this.config.staleDays());
+
+    if (Date.parse(pull.created_at) < staleDate) {
+      ghCore.warning(`Skipping pull request, its older then ${this.config.staleDays()} days and considered stale.`);
+      return false;
+    }
+
     const { data: comparison } = await this.octokit.repos.compareCommits({
       owner: pull.head.repo.owner.login,
       repo: pull.head.repo.name,
