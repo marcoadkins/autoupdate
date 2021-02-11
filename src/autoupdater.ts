@@ -256,6 +256,12 @@ export class AutoUpdater {
 
   async checkForConflict(pull: octokit.PullsUpdateResponseData): Promise<any> {
     if (!pull.mergeable) {
+      await this.notifyOfConflict(pull);
+    }
+  }
+
+  async notifyOfConflict(pull: octokit.PullsUpdateResponseData): Promise<any> {
+    try {
       ghCore.info('Merge conflict detected, Notifying author.');
       const ticketNumberResult = pull.head.ref
         .toUpperCase()
@@ -267,6 +273,10 @@ export class AutoUpdater {
           'Moved to in progress due to merge conflict',
         );
       }
+      // await this.writeComment(pull, 'Merge conflict needs resolved')
+    } catch (e) {
+      ghCore.error('FAILED to notify user');
+      ghCore.error(e);
     }
   }
 
@@ -322,17 +332,7 @@ export class AutoUpdater {
           e.message === 'Merge conflict' &&
           mergeConflictAction === 'notify'
         ) {
-          try {
-            ghCore.info('Merge conflict detected, Notifying author.');
-            const ticketNumberResult = pull.head.ref.toUpperCase().match(/[A-Z]+-\d+/g)
-            if(ticketNumberResult){
-              await jira.transitionTicket(ticketNumberResult[0], this.config.jiraConflictTranisition(), 'Moved to in progress due to merge conflict')
-            }
-            // await this.writeComment(pull, 'Merge conflict needs resolved')
-          }catch (e){
-            ghCore.error('FAILED to notify user');
-            ghCore.error(e);
-          }
+          await this.notifyOfConflict(pull);
           break;
         }
         if (e.message === 'Merge conflict') {
