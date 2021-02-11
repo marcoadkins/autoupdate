@@ -104,6 +104,12 @@ export class AutoUpdater {
       `Updating branch '${ref}' on pull request #${pull.number} with changes from ref '${baseRef}'.`,
     );
 
+    if (this.config.mergeConflictCheck()) {
+      ghCore.warning('Only checking for merge conflicts.');
+      await this.checkForConflict(pull);
+      return true;
+    }
+
     if (this.config.dryRun()) {
       ghCore.warning(
         `Would have merged ref '${headRef}' into ref '${baseRef}' but DRY_RUN was enabled.`,
@@ -236,13 +242,32 @@ export class AutoUpdater {
     return true;
   }
 
-  async writeComment(pull: octokit.PullsUpdateResponseData, message: string): Promise<any> {
+  async writeComment(
+    pull: octokit.PullsUpdateResponseData,
+    message: string,
+  ): Promise<any> {
     const new_comment = this.octokit.issues.createComment({
       issue_number: pull.number,
       owner: pull.head.repo.owner.login,
       repo: pull.head.repo.name,
-      body: message
+      body: message,
     });
+  }
+
+  async checkForConflict(pull: octokit.PullsUpdateResponseData): Promise<any> {
+    if (!pull.mergeable) {
+      ghCore.info('Merge conflict detected, Notifying author.');
+      const ticketNumberResult = pull.head.ref
+        .toUpperCase()
+        .match(/[A-Z]+-\d+/g);
+      if (ticketNumberResult) {
+        await jira.transitionTicket(
+          ticketNumberResult[0],
+          this.config.jiraConflictTranisition(),
+          'Moved to in progress due to merge conflict',
+        );
+      }
+    }
   }
 
   async merge(

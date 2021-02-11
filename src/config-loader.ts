@@ -29,6 +29,11 @@ export class ConfigLoader {
     return this.getValue('STALE_DAYS', false, 30);
   }
 
+  mergeConflictCheck(): boolean {
+    const val = this.getValue('MERGE_CONFLICT_CHECK', false, 'false');
+    return val === 'true';
+  }
+
   dryRun(): boolean {
     const val = this.getValue('DRY_RUN', false, 'false');
     return val === 'true';
